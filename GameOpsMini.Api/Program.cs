@@ -1,41 +1,75 @@
+using GameOpsMini.Shared.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks();
+
+builder.Services.AddSingleton<List<ServerStatus>>(_ =>
+[
+    new ServerStatus
+    {
+        Id = 1,
+        Name = "DummyGameServer-1",
+        Host = "127.0.0.1",
+        Port = 7777,
+        State = ServerState.Unknown,
+        LastCheckedAt = DateTime.UtcNow,
+        FailureCount = 0,
+        Message = "Not checked yet"
+    },
+    new ServerStatus
+    {
+        Id = 2,
+        Name = "DummyGameServer-2",
+        Host = "127.0.0.1",
+        Port = 7778,
+        State = ServerState.Unknown,
+        LastCheckedAt = DateTime.UtcNow,
+        FailureCount = 0,
+        Message = "Not checked yet"
+    }
+]);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapHealthChecks("/health");
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+app.MapGet("/", () => Results.Ok(new
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    Service = "GameOpsMini.Api",
+    Status = "Running",
+    Time = DateTime.UtcNow
+}));
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/api/servers", (List<ServerStatus> servers) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    return Results.Ok(servers);
+});
+
+app.MapGet("/api/servers/{id:int}", (int id, List<ServerStatus> servers) =>
+{
+    var server = servers.FirstOrDefault(x => x.Id == id);
+
+    return server is null
+        ? Results.NotFound(new { Message = $"Server id {id} not found" })
+        : Results.Ok(server);
+});
+
+app.MapPost("/api/servers/{id:int}/status", (int id, ServerStatus updatedStatus, List<ServerStatus> servers) =>
+{
+    var server = servers.FirstOrDefault(x => x.Id == id);
+
+    if (server is null)
+    {
+        return Results.NotFound(new { Message = $"Server id {id} not found" });
+    }
+
+    server.State = updatedStatus.State;
+    server.LastCheckedAt = DateTime.UtcNow;
+    server.FailureCount = updatedStatus.FailureCount;
+    server.Message = updatedStatus.Message;
+
+    return Results.Ok(server);
+});
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

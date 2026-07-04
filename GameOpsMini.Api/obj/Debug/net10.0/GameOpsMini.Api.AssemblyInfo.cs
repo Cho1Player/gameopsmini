@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GameOpsMini.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eb4f8d47de79f9c9142786bd97a3fae5e223d618")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8114727852c50c49288b122ba070006d0e49490b")]
 [assembly: System.Reflection.AssemblyProductAttribute("GameOpsMini.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GameOpsMini.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

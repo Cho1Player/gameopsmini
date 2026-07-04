@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GameOpsMini.Worker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eb4f8d47de79f9c9142786bd97a3fae5e223d618")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b47d4c88f0cfa4a780b92b58f3c9c5d743242c37")]
 [assembly: System.Reflection.AssemblyProductAttribute("GameOpsMini.Worker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GameOpsMini.Worker")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
