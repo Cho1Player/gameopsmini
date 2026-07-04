@@ -49,3 +49,4 @@ C:\GameOpsMini\GameOpsMini.Worker\obj\Debug\net10.0\refint\GameOpsMini.Worker.dl
 C:\GameOpsMini\GameOpsMini.Worker\obj\Debug\net10.0\GameOpsMini.Worker.pdb
 C:\GameOpsMini\GameOpsMini.Worker\obj\Debug\net10.0\GameOpsMini.Worker.genruntimeconfig.cache
 C:\GameOpsMini\GameOpsMini.Worker\obj\Debug\net10.0\ref\GameOpsMini.Worker.dll
+C:\GameOpsMini\GameOpsMini.Worker\bin\Debug\net10.0\Microsoft.Extensions.Http.dll

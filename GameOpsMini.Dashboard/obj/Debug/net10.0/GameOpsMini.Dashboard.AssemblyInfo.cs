@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GameOpsMini.Dashboard")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b47d4c88f0cfa4a780b92b58f3c9c5d743242c37")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c3ba2a567ac9be1fefc0af95bc2abd7e5fbd387a")]
 [assembly: System.Reflection.AssemblyProductAttribute("GameOpsMini.Dashboard")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GameOpsMini.Dashboard")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

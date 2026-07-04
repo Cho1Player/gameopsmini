@@ -9,7 +9,8 @@
       "GameOpsMini.Worker/1.0.0": {
         "dependencies": {
           "GameOpsMini.Shared": "1.0.0",
-          "Microsoft.Extensions.Hosting": "10.0.9"
+          "Microsoft.Extensions.Hosting": "10.0.9",
+          "Microsoft.Extensions.Http": "10.0.9"
         },
         "runtime": {
           "GameOpsMini.Worker.dll": {}
@@ -235,6 +236,22 @@
         },
         "runtime": {
           "lib/net10.0/Microsoft.Extensions.Hosting.Abstractions.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.926.27113"
+          }
+        }
+      },
+      "Microsoft.Extensions.Http/10.0.9": {
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
+          "Microsoft.Extensions.Diagnostics": "10.0.9",
+          "Microsoft.Extensions.Logging": "10.0.9",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.9",
+          "Microsoft.Extensions.Options": "10.0.9"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Http.dll": {
             "assemblyVersion": "10.0.0.0",
             "fileVersion": "10.0.926.27113"
           }
@@ -531,6 +548,13 @@
       "sha512": "sha512-Xd/2F+uWblTiUp+ssaDZN2ea4vmnHmW6PXugmqBHumyhqVkyeh6RJ3S2Zo/F+1bXIL/KuGqe2pKv6UiGOc1KeQ==",
       "path": "microsoft.extensions.hosting.abstractions/10.0.9",
       "hashPath": "microsoft.extensions.hosting.abstractions.10.0.9.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Http/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-5jdmuLRg1HO7x/v8McOf6ndhkMQWImkRBtJpXM8+xIocXNdLqCItyyFLKusdILc62TDzHuLlqaWoxtOA5FFOPg==",
+      "path": "microsoft.extensions.http/10.0.9",
+      "hashPath": "microsoft.extensions.http.10.0.9.nupkg.sha512"
     },
     "Microsoft.Extensions.Logging/10.0.9": {
       "type": "package",
