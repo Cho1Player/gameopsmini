@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "SD5l4EuxanM=",
+  "dgSpecHash": "z2R7F2MqwxU=",
   "success": true,
   "projectFilePath": "C:\\GameOpsMini\\GameOpsMini.Worker\\GameOpsMini.Worker.csproj",
   "expectedPackageFiles": [
@@ -21,6 +21,7 @@
     "C:\\Users\\최인용\\.nuget\\packages\\microsoft.extensions.filesystemglobbing\\10.0.9\\microsoft.extensions.filesystemglobbing.10.0.9.nupkg.sha512",
     "C:\\Users\\최인용\\.nuget\\packages\\microsoft.extensions.hosting\\10.0.9\\microsoft.extensions.hosting.10.0.9.nupkg.sha512",
     "C:\\Users\\최인용\\.nuget\\packages\\microsoft.extensions.hosting.abstractions\\10.0.9\\microsoft.extensions.hosting.abstractions.10.0.9.nupkg.sha512",
+    "C:\\Users\\최인용\\.nuget\\packages\\microsoft.extensions.http\\10.0.9\\microsoft.extensions.http.10.0.9.nupkg.sha512",
     "C:\\Users\\최인용\\.nuget\\packages\\microsoft.extensions.logging\\10.0.9\\microsoft.extensions.logging.10.0.9.nupkg.sha512",
     "C:\\Users\\최인용\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.9\\microsoft.extensions.logging.abstractions.10.0.9.nupkg.sha512",
     "C:\\Users\\최인용\\.nuget\\packages\\microsoft.extensions.logging.configuration\\10.0.9\\microsoft.extensions.logging.configuration.10.0.9.nupkg.sha512",
