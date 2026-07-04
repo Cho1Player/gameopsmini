@@ -1,0 +1,27 @@
+@host = http://localhost:5000
+
+### Root
+GET {{host}}/
+
+### Health
+GET {{host}}/health
+
+### Servers
+GET {{host}}/api/servers
+
+### Server detail
+GET {{host}}/api/servers/1
+
+### Update server status
+POST {{host}}/api/servers/1/status
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "DummyGameServer-1",
+  "host": "127.0.0.1",
+  "port": 7777,
+  "state": 1,
+  "failureCount": 0,
+  "message": "TCP port is reachable"
+}
