@@ -1,0 +1,15 @@
+C:\GameOpsMini\GameOpsMini.DummyServer\bin\Debug\net10.0\GameOpsMini.DummyServer.exe
+C:\GameOpsMini\GameOpsMini.DummyServer\bin\Debug\net10.0\GameOpsMini.DummyServer.deps.json
+C:\GameOpsMini\GameOpsMini.DummyServer\bin\Debug\net10.0\GameOpsMini.DummyServer.runtimeconfig.json
+C:\GameOpsMini\GameOpsMini.DummyServer\bin\Debug\net10.0\GameOpsMini.DummyServer.dll
+C:\GameOpsMini\GameOpsMini.DummyServer\bin\Debug\net10.0\GameOpsMini.DummyServer.pdb
+C:\GameOpsMini\GameOpsMini.DummyServer\obj\Debug\net10.0\GameOpsMini.DummyServer.GeneratedMSBuildEditorConfig.editorconfig
+C:\GameOpsMini\GameOpsMini.DummyServer\obj\Debug\net10.0\GameOpsMini.DummyServer.AssemblyInfoInputs.cache
+C:\GameOpsMini\GameOpsMini.DummyServer\obj\Debug\net10.0\GameOpsMini.DummyServer.AssemblyInfo.cs
+C:\GameOpsMini\GameOpsMini.DummyServer\obj\Debug\net10.0\GameOpsMini.DummyServer.csproj.CoreCompileInputs.cache
+C:\GameOpsMini\GameOpsMini.DummyServer\obj\Debug\net10.0\GameOpsMini.DummyServer.sourcelink.json
+C:\GameOpsMini\GameOpsMini.DummyServer\obj\Debug\net10.0\GameOpsMini.DummyServer.dll
+C:\GameOpsMini\GameOpsMini.DummyServer\obj\Debug\net10.0\refint\GameOpsMini.DummyServer.dll
+C:\GameOpsMini\GameOpsMini.DummyServer\obj\Debug\net10.0\GameOpsMini.DummyServer.pdb
+C:\GameOpsMini\GameOpsMini.DummyServer\obj\Debug\net10.0\GameOpsMini.DummyServer.genruntimeconfig.cache
+C:\GameOpsMini\GameOpsMini.DummyServer\obj\Debug\net10.0\ref\GameOpsMini.DummyServer.dll

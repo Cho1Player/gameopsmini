@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="GameOpsMini.Api/GameOpsMini.Api.csproj" />
   <Project Path="GameOpsMini.Dashboard/GameOpsMini.Dashboard.csproj" />
+  <Project Path="GameOpsMini.DummyServer/GameOpsMini.DummyServer.csproj" />
   <Project Path="GameOpsMini.Shared/GameOpsMini.Shared.csproj" />
   <Project Path="GameOpsMini.Worker/GameOpsMini.Worker.csproj" />
 </Solution>
