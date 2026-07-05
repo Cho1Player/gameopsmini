@@ -1,6 +1,27 @@
 using GameOpsMini.Shared.Models;
+using GameOpsMini.Api.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var postgreSqlConnection =
+    builder.Configuration.GetConnectionString("PostgreSql")
+    ?? throw new InvalidOperationException(
+        "PostgreSql connection string is missing.");
+
+var redisConnection =
+    builder.Configuration.GetConnectionString("Redis")
+    ?? throw new InvalidOperationException(
+        "Redis connection string is missing.");
+
+builder.Services.AddDbContext<GameOpsDbContext>(options =>
+    options.UseNpgsql(postgreSqlConnection));
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnection;
+    options.InstanceName = "GameOpsMini:";
+});
 
 builder.Services.AddHealthChecks();
 
