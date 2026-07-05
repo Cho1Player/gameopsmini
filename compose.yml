@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: gameops-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: gameops
+      POSTGRES_USER: gameops
+      POSTGRES_PASSWORD: gameops_password
+      TZ: Asia/Seoul
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - gameops-postgres-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gameops -d gameops"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+    networks:
+      - gameops-network
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: gameops-redis
+    restart: unless-stopped
+
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - gameops_redis_password
+
+    environment:
+      TZ: Asia/Seoul
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - gameops-redis-data:/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "redis-cli -a gameops_redis_password ping | grep PONG"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+    networks:
+      - gameops-network
+
+volumes:
+  gameops-postgres-data:
+    name: gameops-postgres-data
+
+  gameops-redis-data:
+    name: gameops-redis-data
+
+networks:
+  gameops-network:
+    name: gameops-network
+    driver: bridge
