@@ -1,6 +1,7 @@
 using System.Net.Sockets;
 using System.Net.Http.Json;
 using GameOpsMini.Shared.Models;
+using GameOpsMini.Shared.Requests;
 
 namespace GameOpsMini.Worker;
 
@@ -65,10 +66,20 @@ public class Worker : BackgroundService
                 ? "TCP port is reachable"
                 : "TCP port is not reachable";
 
-            await httpClient.PostAsJsonAsync(
+            var updateRequest = new UpdateServerStatusRequest
+            {
+                State = server.State,
+                LastCheckedAt = server.LastCheckedAt,
+                FailureCount = server.FailureCount,
+                Message = server.Message
+            };
+
+            var response = await httpClient.PostAsJsonAsync(
                 $"{apiBaseUrl}/api/servers/{server.Id}/status",
-                server,
+                updateRequest,
                 cancellationToken);
+
+            response.EnsureSuccessStatusCode();
 
             _logger.LogInformation(
                 "Checked {Name} {Host}:{Port} => {State}",
