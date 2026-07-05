@@ -1,24 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "X1NGPwXyods=",
+  "dgSpecHash": "VcPhSZDDBok=",
   "success": true,
   "projectFilePath": "C:\\GameOpsMini\\GameOpsMini.Api\\GameOpsMini.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\최인용\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.9\\microsoft.aspnetcore.openapi.10.0.9.nupkg.sha512",
-    "C:\\Users\\최인용\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512"
+    "C:\\Users\\최인용\\.nuget\\packages\\microsoft.openapi\\2.7.5\\microsoft.openapi.2.7.5.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1903",
-      "level": "Warning",
-      "message": "'Microsoft.OpenApi' 2.0.0 패키지에 알려진 높음 심각도 취약성인 https://github.com/advisories/GHSA-v5pm-xwqc-g5wc이(가) 있습니다.",
-      "projectPath": "C:\\GameOpsMini\\GameOpsMini.Api\\GameOpsMini.Api.csproj",
-      "warningLevel": 1,
-      "filePath": "C:\\GameOpsMini\\GameOpsMini.Api\\GameOpsMini.Api.csproj",
-      "libraryId": "Microsoft.OpenApi",
-      "targetGraphs": [
-        "net10.0"
-      ]
-    }
-  ]
+  "logs": []
 }
