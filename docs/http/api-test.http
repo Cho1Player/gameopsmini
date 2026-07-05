@@ -17,11 +17,11 @@ POST {{host}}/api/servers/1/status
 Content-Type: application/json
 
 {
-  "id": 1,
-  "name": "DummyGameServer-1",
-  "host": "127.0.0.1",
-  "port": 7777,
   "state": 1,
+  "lastCheckedAt": "2026-07-02T12:00:00Z",
   "failureCount": 0,
   "message": "TCP port is reachable"
 }
+
+### Server history
+GET {{host}}/api/servers/1/history

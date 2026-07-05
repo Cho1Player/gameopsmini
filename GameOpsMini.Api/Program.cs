@@ -1,6 +1,11 @@
-using GameOpsMini.Shared.Models;
+using System.Text.Json;
+using GameOpsMini.Api.Cache;
 using GameOpsMini.Api.Data;
+using GameOpsMini.Api.Entities;
+using GameOpsMini.Shared.Models;
+using GameOpsMini.Shared.Requests;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,32 +30,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddSingleton<List<ServerStatus>>(_ =>
-[
-    new ServerStatus
-    {
-        Id = 1,
-        Name = "DummyGameServer-1",
-        Host = "127.0.0.1",
-        Port = 7777,
-        State = ServerState.Unknown,
-        LastCheckedAt = DateTime.UtcNow,
-        FailureCount = 0,
-        Message = "Not checked yet"
-    },
-    new ServerStatus
-    {
-        Id = 2,
-        Name = "DummyGameServer-2",
-        Host = "127.0.0.1",
-        Port = 7778,
-        State = ServerState.Unknown,
-        LastCheckedAt = DateTime.UtcNow,
-        FailureCount = 0,
-        Message = "Not checked yet"
-    }
-]);
-
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
@@ -62,35 +41,212 @@ app.MapGet("/", () => Results.Ok(new
     Time = DateTime.UtcNow
 }));
 
-app.MapGet("/api/servers", (List<ServerStatus> servers) =>
-{
-    return Results.Ok(servers);
-});
-
-app.MapGet("/api/servers/{id:int}", (int id, List<ServerStatus> servers) =>
-{
-    var server = servers.FirstOrDefault(x => x.Id == id);
-
-    return server is null
-        ? Results.NotFound(new { Message = $"Server id {id} not found" })
-        : Results.Ok(server);
-});
-
-app.MapPost("/api/servers/{id:int}/status", (int id, ServerStatus updatedStatus, List<ServerStatus> servers) =>
-{
-    var server = servers.FirstOrDefault(x => x.Id == id);
-
-    if (server is null)
+app.MapGet(
+    "/api/servers",
+    async (
+        GameOpsDbContext dbContext,
+        IDistributedCache cache,
+        CancellationToken cancellationToken) =>
     {
-        return Results.NotFound(new { Message = $"Server id {id} not found" });
-    }
+        var monitoredServers = await dbContext.MonitoredServers
+            .AsNoTracking()
+            .OrderBy(server => server.Id)
+            .ToListAsync(cancellationToken);
 
-    server.State = updatedStatus.State;
-    server.LastCheckedAt = DateTime.UtcNow;
-    server.FailureCount = updatedStatus.FailureCount;
-    server.Message = updatedStatus.Message;
+        var result = new List<ServerStatus>();
 
-    return Results.Ok(server);
-});
+        foreach (var monitoredServer in monitoredServers)
+        {
+            var cacheKey =
+                ServerStatusCacheKeys.GetServerStatusKey(monitoredServer.Id);
+
+            var cachedJson = await cache.GetStringAsync(
+                cacheKey,
+                cancellationToken);
+
+            ServerStatus? currentStatus = null;
+
+            if (!string.IsNullOrWhiteSpace(cachedJson))
+            {
+                currentStatus =
+                    JsonSerializer.Deserialize<ServerStatus>(cachedJson);
+            }
+
+            result.Add(currentStatus ?? new ServerStatus
+            {
+                Id = monitoredServer.Id,
+                Name = monitoredServer.Name,
+                Host = monitoredServer.Host,
+                Port = monitoredServer.Port,
+                State = ServerState.Unknown,
+                LastCheckedAt = DateTime.MinValue,
+                FailureCount = 0,
+                Message = "No monitoring result is cached yet"
+            });
+        }
+
+        return Results.Ok(result);
+    });
+
+app.MapGet(
+    "/api/servers/{id:int}",
+    async (
+        int id,
+        GameOpsDbContext dbContext,
+        IDistributedCache cache,
+        CancellationToken cancellationToken) =>
+    {
+        var monitoredServer = await dbContext.MonitoredServers
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                server => server.Id == id,
+                cancellationToken);
+
+        if (monitoredServer is null)
+        {
+            return Results.NotFound(new
+            {
+                Message = $"Server id {id} not found"
+            });
+        }
+
+        var cacheKey =
+            ServerStatusCacheKeys.GetServerStatusKey(monitoredServer.Id);
+
+        var cachedJson = await cache.GetStringAsync(
+            cacheKey,
+            cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(cachedJson))
+        {
+            var cachedStatus =
+                JsonSerializer.Deserialize<ServerStatus>(cachedJson);
+
+            if (cachedStatus is not null)
+            {
+                return Results.Ok(cachedStatus);
+            }
+        }
+
+        return Results.Ok(new ServerStatus
+        {
+            Id = monitoredServer.Id,
+            Name = monitoredServer.Name,
+            Host = monitoredServer.Host,
+            Port = monitoredServer.Port,
+            State = ServerState.Unknown,
+            LastCheckedAt = DateTime.MinValue,
+            FailureCount = 0,
+            Message = "No monitoring result is cached yet"
+        });
+    });
+
+app.MapPost(
+    "/api/servers/{id:int}/status",
+    async (
+        int id,
+        UpdateServerStatusRequest request,
+        GameOpsDbContext dbContext,
+        IDistributedCache cache,
+        CancellationToken cancellationToken) =>
+    {
+        var monitoredServer = await dbContext.MonitoredServers
+            .SingleOrDefaultAsync(
+                server => server.Id == id,
+                cancellationToken);
+
+        if (monitoredServer is null)
+        {
+            return Results.NotFound(new
+            {
+                Message = $"Server id {id} not found"
+            });
+        }
+
+        var checkedAt = request.LastCheckedAt == default
+            ? DateTime.UtcNow
+            : request.LastCheckedAt.ToUniversalTime();
+
+        var history = new ServerStatusHistory
+        {
+            MonitoredServerId = monitoredServer.Id,
+            State = request.State,
+            CheckedAt = checkedAt,
+            FailureCount = request.FailureCount,
+            Message = request.Message
+        };
+
+        dbContext.ServerStatusHistories.Add(history);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var currentStatus = new ServerStatus
+        {
+            Id = monitoredServer.Id,
+            Name = monitoredServer.Name,
+            Host = monitoredServer.Host,
+            Port = monitoredServer.Port,
+            State = request.State,
+            LastCheckedAt = checkedAt,
+            FailureCount = request.FailureCount,
+            Message = request.Message
+        };
+
+        var cacheKey =
+            ServerStatusCacheKeys.GetServerStatusKey(monitoredServer.Id);
+
+        var cacheJson = JsonSerializer.Serialize(currentStatus);
+
+        await cache.SetStringAsync(
+            cacheKey,
+            cacheJson,
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow =
+                    TimeSpan.FromMinutes(10)
+            },
+            cancellationToken);
+
+        return Results.Ok(currentStatus);
+    });
+
+app.MapGet(
+    "/api/servers/{id:int}/history",
+    async (
+        int id,
+        GameOpsDbContext dbContext,
+        CancellationToken cancellationToken) =>
+    {
+        var serverExists = await dbContext.MonitoredServers
+            .AsNoTracking()
+            .AnyAsync(
+                server => server.Id == id,
+                cancellationToken);
+
+        if (!serverExists)
+        {
+            return Results.NotFound(new
+            {
+                Message = $"Server id {id} not found"
+            });
+        }
+
+        var histories = await dbContext.ServerStatusHistories
+            .AsNoTracking()
+            .Where(history => history.MonitoredServerId == id)
+            .OrderByDescending(history => history.CheckedAt)
+            .Take(100)
+            .Select(history => new
+            {
+                history.Id,
+                ServerId = history.MonitoredServerId,
+                history.State,
+                history.CheckedAt,
+                history.FailureCount,
+                history.Message
+            })
+            .ToListAsync(cancellationToken);
+
+        return Results.Ok(histories);
+    });
 
 app.Run();
