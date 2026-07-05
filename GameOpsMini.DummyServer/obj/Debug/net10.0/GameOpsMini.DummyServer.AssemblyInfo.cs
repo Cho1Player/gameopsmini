@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GameOpsMini.DummyServer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8519fed746ddd967ea7c92e5b92af4a938f5e875")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+78049b6c0f9fdd085bfb271115979b026c5ce2e3")]
 [assembly: System.Reflection.AssemblyProductAttribute("GameOpsMini.DummyServer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GameOpsMini.DummyServer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
