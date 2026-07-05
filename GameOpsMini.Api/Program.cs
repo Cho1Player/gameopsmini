@@ -151,6 +151,7 @@ app.MapPost(
         CancellationToken cancellationToken) =>
     {
         var monitoredServer = await dbContext.MonitoredServers
+            .AsNoTracking()
             .SingleOrDefaultAsync(
                 server => server.Id == id,
                 cancellationToken);
@@ -167,17 +168,21 @@ app.MapPost(
             ? DateTime.UtcNow
             : request.LastCheckedAt.ToUniversalTime();
 
-        var history = new ServerStatusHistory
-        {
-            MonitoredServerId = monitoredServer.Id,
-            State = request.State,
-            CheckedAt = checkedAt,
-            FailureCount = request.FailureCount,
-            Message = request.Message
-        };
+        var cacheKey =
+            ServerStatusCacheKeys.GetServerStatusKey(monitoredServer.Id);
 
-        dbContext.ServerStatusHistories.Add(history);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        var previousCacheJson = await cache.GetStringAsync(
+            cacheKey,
+            cancellationToken);
+
+        ServerStatus? previousStatus = null;
+
+        if (!string.IsNullOrWhiteSpace(previousCacheJson))
+        {
+            previousStatus =
+                JsonSerializer.Deserialize<ServerStatus>(
+                    previousCacheJson);
+        }
 
         var currentStatus = new ServerStatus
         {
@@ -191,8 +196,24 @@ app.MapPost(
             Message = request.Message
         };
 
-        var cacheKey =
-            ServerStatusCacheKeys.GetServerStatusKey(monitoredServer.Id);
+        var hasStateChanged =
+            previousStatus is null ||
+            previousStatus.State != currentStatus.State;
+
+        if (hasStateChanged)
+        {
+            var history = new ServerStatusHistory
+            {
+                MonitoredServerId = monitoredServer.Id,
+                State = currentStatus.State,
+                CheckedAt = currentStatus.LastCheckedAt,
+                FailureCount = currentStatus.FailureCount,
+                Message = currentStatus.Message
+            };
+
+            dbContext.ServerStatusHistories.Add(history);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         var cacheJson = JsonSerializer.Serialize(currentStatus);
 
@@ -206,7 +227,11 @@ app.MapPost(
             },
             cancellationToken);
 
-        return Results.Ok(currentStatus);
+        return Results.Ok(new
+        {
+            Status = currentStatus,
+            HistorySaved = hasStateChanged
+        });
     });
 
 app.MapGet(
