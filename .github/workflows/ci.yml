@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - docker-image-build
 
   pull_request:
     branches:
