@@ -19,18 +19,26 @@
 </p>
 
 <button class="btn btn-primary mb-3" @onclick="LoadServersAsync" disabled="@isLoading">
-    새로고침
+    @(isLoading ? "갱신 중..." : "새로고침")
 </button>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        <div>@errorMessage</div>
+
+        @if (servers.Count > 0)
+        {
+            <div class="mt-1">
+                마지막으로 조회한 상태를 표시하고 있습니다.
+            </div>
+        }
+    </div>
+}
 
 @if (isLoading && servers.Count == 0)
 {
     <p>Loading server status...</p>
-}
-else if (!string.IsNullOrWhiteSpace(errorMessage))
-{
-    <div class="alert alert-danger" role="alert">
-        @errorMessage
-    </div>
 }
 else if (servers.Count == 0)
 {
@@ -133,10 +141,14 @@ else
         {
             // 페이지가 종료되면서 취소된 경우는 오류로 표시하지 않는다.
         }
-        catch (Exception ex)
+        catch (GameOpsApiException ex)
+        {
+            errorMessage = ex.Message;
+        }
+        catch (Exception)
         {
             errorMessage =
-                $"서버 상태를 불러오지 못했습니다. {ex.Message}";
+                "서버 상태를 불러오는 중 예상하지 못한 오류가 발생했습니다.";
         }
         finally
         {

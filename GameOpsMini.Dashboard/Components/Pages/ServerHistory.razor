@@ -67,7 +67,7 @@ else
         <h2 class="mb-0">상태 변경 이력</h2>
 
         <button class="btn btn-sm btn-primary" @onclick="LoadDataAsync" disabled="@isLoading">
-            새로고침
+            @(isLoading ? "갱신 중..." : "새로고침")
         </button>
     </div>
 
@@ -164,10 +164,14 @@ else
         {
             // 페이지 이동 또는 요청 취소 시 오류로 표시하지 않는다.
         }
-        catch (Exception ex)
+        catch (GameOpsApiException ex)
+        {
+            errorMessage = ex.Message;
+        }
+        catch (Exception)
         {
             errorMessage =
-                $"서버 이력을 불러오지 못했습니다. {ex.Message}";
+                "서버 이력을 불러오는 중 예상하지 못한 오류가 발생했습니다.";
         }
         finally
         {
