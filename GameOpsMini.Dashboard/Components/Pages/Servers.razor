@@ -4,6 +4,7 @@
 
 @using GameOpsMini.Dashboard.Services
 @using GameOpsMini.Shared.Models
+@using GameOpsMini.Dashboard.Utils
 
 @inject GameOpsApiClient ApiClient
 
@@ -14,7 +15,8 @@
 <p class="text-muted">
     마지막 화면 갱신:
     @(lastRefreshedAt.HasValue
-        ? lastRefreshedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+        ? DateTimeFormatter.ToKoreaTimeString(
+            lastRefreshedAt.Value)
         : "-")
 </p>
 
@@ -79,7 +81,7 @@ else
                             </span>
                         </td>
 
-                        <td>@FormatCheckedAt(server.LastCheckedAt)</td>
+                        <td>@DateTimeFormatter.ToKoreaTimeString(server.LastCheckedAt)</td>
 
                         <td>@server.FailureCount</td>
 
@@ -224,18 +226,6 @@ else
             ServerState.Down => "badge text-bg-danger",
             _ => "badge text-bg-secondary"
         };
-    }
-
-    private static string FormatCheckedAt(DateTime checkedAt)
-    {
-        if (checkedAt == default || checkedAt == DateTime.MinValue)
-        {
-            return "-";
-        }
-
-        return checkedAt
-            .ToLocalTime()
-            .ToString("yyyy-MM-dd HH:mm:ss");
     }
 
     public async ValueTask DisposeAsync()

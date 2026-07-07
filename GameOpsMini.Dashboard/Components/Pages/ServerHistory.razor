@@ -3,6 +3,7 @@
 
 @using GameOpsMini.Dashboard.Services
 @using GameOpsMini.Shared.Models
+@using GameOpsMini.Dashboard.Utils
 
 @inject GameOpsApiClient ApiClient
 
@@ -49,7 +50,7 @@ else
 
         <div>
             <strong>마지막 검사:</strong>
-            @FormatDateTime(server.LastCheckedAt)
+            @DateTimeFormatter.ToKoreaTimeString(server.LastCheckedAt)
         </div>
 
         <div>
@@ -103,7 +104,7 @@ else
                                 </span>
                             </td>
 
-                            <td>@FormatDateTime(history.CheckedAt)</td>
+                            <td>@DateTimeFormatter.ToKoreaTimeString(history.CheckedAt)</td>
 
                             <td>@history.FailureCount</td>
 
@@ -197,17 +198,5 @@ else
             ServerState.Down => "badge text-bg-danger",
             _ => "badge text-bg-secondary"
         };
-    }
-
-    private static string FormatDateTime(DateTime dateTime)
-    {
-        if (dateTime == default || dateTime == DateTime.MinValue)
-        {
-            return "-";
-        }
-
-        return dateTime
-            .ToLocalTime()
-            .ToString("yyyy-MM-dd HH:mm:ss");
     }
 }
