@@ -1,7 +1,22 @@
 using GameOpsMini.Dashboard.Components;
 using GameOpsMini.Dashboard.Services;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(
+        new DirectoryInfo("/root/.aspnet/DataProtection-Keys"))
+    .SetApplicationName("GameOpsMini.Dashboard");
+
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.Name = "__Host-GameOpsMini-Dashboard-Antiforgery";
+    options.Cookie.Path = "/";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+});
 
 var apiBaseUrl =
     builder.Configuration["Api:BaseUrl"]

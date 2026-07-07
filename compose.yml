@@ -61,12 +61,133 @@ services:
     networks:
       - gameops-network
 
+  api:
+    image: gameops-api:dev
+    build:
+      context: .
+      dockerfile: GameOpsMini.Api/Dockerfile
+
+    container_name: gameops-api
+    restart: unless-stopped
+
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Production
+
+      ConnectionStrings__PostgreSql: >-
+        Host=postgres;
+        Port=5432;
+        Database=gameops;
+        Username=gameops;
+        Password=gameops_password
+
+      ConnectionStrings__Redis: >-
+        redis:6379,
+        password=gameops_redis_password
+
+    ports:
+      - "5000:8080"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - gameops-network
+
+  worker:
+    image: gameops-worker:dev
+    build:
+      context: .
+      dockerfile: GameOpsMini.Worker/Dockerfile
+
+    container_name: gameops-worker
+    restart: unless-stopped
+
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      Api__BaseUrl: http://api:8080
+      Monitor__IntervalSeconds: 5
+
+    depends_on:
+      - api
+
+    networks:
+      - gameops-network
+
+  dashboard:
+    image: gameops-dashboard:dev
+    build:
+      context: .
+      dockerfile: GameOpsMini.Dashboard/Dockerfile
+
+    container_name: gameops-dashboard
+    restart: unless-stopped
+
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Production
+      Api__BaseUrl: http://api:8080
+
+    ports:
+      - "5001:8080"
+
+    volumes:
+      - gameops-dashboard-keys:/root/.aspnet/DataProtection-Keys
+
+    depends_on:
+      - api
+
+    networks:
+      - gameops-network
+
+  dummy-server-1:
+    image: gameops-dummy-server:dev
+    build:
+      context: .
+      dockerfile: GameOpsMini.DummyServer/Dockerfile
+
+    container_name: gameops-dummy-server-1
+    restart: unless-stopped
+
+    environment:
+      PORT: 7777
+
+    ports:
+      - "7777:7777"
+
+    networks:
+      - gameops-network
+
+  dummy-server-2:
+    image: gameops-dummy-server:dev
+    build:
+      context: .
+      dockerfile: GameOpsMini.DummyServer/Dockerfile
+
+    container_name: gameops-dummy-server-2
+    restart: unless-stopped
+
+    environment:
+      PORT: 7778
+
+    ports:
+      - "7778:7778"
+
+    networks:
+      - gameops-network
+
 volumes:
   gameops-postgres-data:
     name: gameops-postgres-data
 
   gameops-redis-data:
     name: gameops-redis-data
+
+  gameops-dashboard-keys:
+    name: gameops-dashboard-keys
 
 networks:
   gameops-network:
