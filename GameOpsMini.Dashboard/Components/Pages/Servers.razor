@@ -1,5 +1,5 @@
 @page "/servers"
-@rendermode InteractiveServer // 버튼 이벤트와 주기적인 화면 갱신에 필요한 서버 측 상호작용 활성화
+@rendermode InteractiveServer
 @implements IAsyncDisposable
 
 @using GameOpsMini.Dashboard.Services
@@ -102,6 +102,7 @@ else
 
     private PeriodicTimer? refreshTimer;
     private CancellationTokenSource? refreshCancellationTokenSource;
+    private Task? autoRefreshTask;
 
     private bool isLoading;
     private string? errorMessage;
@@ -110,12 +111,22 @@ else
     protected override async Task OnInitializedAsync()
     {
         await LoadServersAsync();
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return Task.CompletedTask;
+        }
 
         refreshCancellationTokenSource = new CancellationTokenSource();
         refreshTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
-        _ = RunAutoRefreshAsync(
+        autoRefreshTask = RunAutoRefreshAsync(
             refreshCancellationTokenSource.Token);
+
+        return Task.CompletedTask;
     }
 
     private async Task LoadServersAsync()
@@ -157,7 +168,7 @@ else
     }
 
     private async Task RunAutoRefreshAsync(
-        CancellationToken cancellationToken)
+    CancellationToken cancellationToken)
     {
         if (refreshTimer is null)
         {
@@ -172,13 +183,26 @@ else
                 await InvokeAsync(async () =>
                 {
                     await LoadServersAsync();
+
+                    // 타이머는 UI 이벤트가 아니므로 명시적으로 재렌더링한다.
                     StateHasChanged();
                 });
             }
         }
         catch (OperationCanceledException)
+            when (cancellationToken.IsCancellationRequested)
         {
-            // 페이지 이동 또는 종료 시 정상적으로 발생할 수 있다.
+            // 페이지 이동 또는 Dashboard 종료 시 정상 취소
+        }
+        catch (Exception ex)
+        {
+            await InvokeAsync(() =>
+            {
+                errorMessage =
+                    $"자동 갱신 중 오류가 발생했습니다. {ex.Message}";
+
+                StateHasChanged();
+            });
         }
     }
 
@@ -214,12 +238,26 @@ else
             .ToString("yyyy-MM-dd HH:mm:ss");
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        refreshCancellationTokenSource?.Cancel();
-        refreshCancellationTokenSource?.Dispose();
-        refreshTimer?.Dispose();
+        if (refreshCancellationTokenSource is not null)
+        {
+            await refreshCancellationTokenSource.CancelAsync();
+        }
 
-        return ValueTask.CompletedTask;
+        if (autoRefreshTask is not null)
+        {
+            try
+            {
+                await autoRefreshTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // 정상적인 종료 과정
+            }
+        }
+
+        refreshTimer?.Dispose();
+        refreshCancellationTokenSource?.Dispose();
     }
 }
