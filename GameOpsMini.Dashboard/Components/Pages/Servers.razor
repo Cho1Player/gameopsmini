@@ -1,0 +1,213 @@
+@page "/servers"
+@rendermode InteractiveServer // 버튼 이벤트와 주기적인 화면 갱신에 필요한 서버 측 상호작용 활성화
+@implements IAsyncDisposable
+
+@using GameOpsMini.Dashboard.Services
+@using GameOpsMini.Shared.Models
+
+@inject GameOpsApiClient ApiClient
+
+<PageTitle>Server Monitor</PageTitle>
+
+<h1>Server Monitor</h1>
+
+<p class="text-muted">
+    마지막 화면 갱신:
+    @(lastRefreshedAt.HasValue
+        ? lastRefreshedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+        : "-")
+</p>
+
+<button class="btn btn-primary mb-3" @onclick="LoadServersAsync" disabled="@isLoading">
+    새로고침
+</button>
+
+@if (isLoading && servers.Count == 0)
+{
+    <p>Loading server status...</p>
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+else if (servers.Count == 0)
+{
+    <div class="alert alert-secondary" role="alert">
+        등록된 감시 대상 서버가 없습니다.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>서버 이름</th>
+                    <th>Host</th>
+                    <th>Port</th>
+                    <th>상태</th>
+                    <th>마지막 검사</th>
+                    <th>실패 횟수</th>
+                    <th>메시지</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var server in servers)
+                {
+                    <tr>
+                        <td>@server.Id</td>
+                        <td>@server.Name</td>
+                        <td>@server.Host</td>
+                        <td>@server.Port</td>
+
+                        <td>
+                            <span class="@GetStateBadgeClass(server.State)">
+                                @GetStateText(server.State)
+                            </span>
+                        </td>
+
+                        <td>@FormatCheckedAt(server.LastCheckedAt)</td>
+
+                        <td>@server.FailureCount</td>
+
+                        <td>@server.Message</td>
+
+                        <td>
+                            <a class="btn btn-sm btn-outline-secondary" href="@($"/servers/{server.Id}/history")">
+                                이력 보기
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private readonly List<ServerStatus> servers = [];
+
+    private PeriodicTimer? refreshTimer;
+    private CancellationTokenSource? refreshCancellationTokenSource;
+
+    private bool isLoading;
+    private string? errorMessage;
+    private DateTime? lastRefreshedAt;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadServersAsync();
+
+        refreshCancellationTokenSource = new CancellationTokenSource();
+        refreshTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+
+        _ = RunAutoRefreshAsync(
+            refreshCancellationTokenSource.Token);
+    }
+
+    private async Task LoadServersAsync()
+    {
+        if (isLoading)
+        {
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            var result = await ApiClient.GetServersAsync();
+
+            servers.Clear();
+            servers.AddRange(result);
+
+            lastRefreshedAt = DateTime.UtcNow;
+        }
+        catch (OperationCanceledException)
+        {
+            // 페이지가 종료되면서 취소된 경우는 오류로 표시하지 않는다.
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                $"서버 상태를 불러오지 못했습니다. {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RunAutoRefreshAsync(
+        CancellationToken cancellationToken)
+    {
+        if (refreshTimer is null)
+        {
+            return;
+        }
+
+        try
+        {
+            while (await refreshTimer.WaitForNextTickAsync(
+                cancellationToken))
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadServersAsync();
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // 페이지 이동 또는 종료 시 정상적으로 발생할 수 있다.
+        }
+    }
+
+    private static string GetStateText(ServerState state)
+    {
+        return state switch
+        {
+            ServerState.Up => "UP",
+            ServerState.Down => "DOWN",
+            _ => "UNKNOWN"
+        };
+    }
+
+    private static string GetStateBadgeClass(ServerState state)
+    {
+        return state switch
+        {
+            ServerState.Up => "badge text-bg-success",
+            ServerState.Down => "badge text-bg-danger",
+            _ => "badge text-bg-secondary"
+        };
+    }
+
+    private static string FormatCheckedAt(DateTime checkedAt)
+    {
+        if (checkedAt == default || checkedAt == DateTime.MinValue)
+        {
+            return "-";
+        }
+
+        return checkedAt
+            .ToLocalTime()
+            .ToString("yyyy-MM-dd HH:mm:ss");
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        refreshCancellationTokenSource?.Cancel();
+        refreshCancellationTokenSource?.Dispose();
+        refreshTimer?.Dispose();
+
+        return ValueTask.CompletedTask;
+    }
+}
