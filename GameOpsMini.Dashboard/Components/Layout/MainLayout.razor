@@ -11,7 +11,17 @@
         </div>
 
         <article class="content px-4">
-            @Body
+            <ErrorBoundary>
+                <ChildContent>
+                    @Body
+                </ChildContent>
+
+                <ErrorContent Context="exception">
+                    <div class="alert alert-danger m-3" role="alert">
+                        화면을 표시하는 중 오류가 발생했습니다.
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
         </article>
     </main>
 </div>

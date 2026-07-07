@@ -1,6 +1,20 @@
 using GameOpsMini.Dashboard.Components;
+using GameOpsMini.Dashboard.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var apiBaseUrl =
+    builder.Configuration["Api:BaseUrl"]
+    ?? throw new InvalidOperationException(
+        "Api:BaseUrl configuration is missing.");
+
+builder.Services.AddHttpClient("GameOpsApi", client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+
+builder.Services.AddScoped<GameOpsApiClient>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
