@@ -1,6 +1,6 @@
 # GameOpsMini
 
-## C#과 .NET을 기반으로 만든 소규모 서버 모니터링 프로젝트입니다.
+## C#과 .NET을 기반으로 만든 소규모 서버 모니터링 프로젝트
 
 API, Worker, Dashboard, Dummy TCP Server를 분리하고 PostgreSQL, Redis, Docker Compose, GitHub Actions를 함께 사용하여 서버 상태 감시와 자동 빌드 검증 흐름을 구성했습니다.
 
